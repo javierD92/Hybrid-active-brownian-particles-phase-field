@@ -1,0 +1,13 @@
+ ----------------------------------------------
+ Simulation Started
+ Grid Size:  512 x  512
+ Particles:   8661
+ Total Steps:       8163
+ ----------------------------------------------
+ Additional parameters
+ particle surface fraction   0.299968630    
+ Pe    1.00000005E-04
+ ----------------------------------------------
+ do a <<dry>> run at t=           0 to calculate properties
+ save initial state
+ >> Step:          0 (  0.00%) - Data Saved.

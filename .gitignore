@@ -1,0 +1,16 @@
+# Ignore compiled files
+*.o
+*.mod
+*.exe
+
+# Ignore simulation data
+Simulations/
+*.dat
+*.bin
+*.txt
+*.bin
+performance.txt
+
+# Ignore Python cache
+__pycache__/
+.ipynb_checkpoints/
