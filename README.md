@@ -5,43 +5,57 @@ Thi repository contains the source code and postprocessing tools for the simulat
 ## Project Overview
 
 The simulation handles the co-evolution of two distinct but coupled systems:
-1. Phase Field: A continuous field governed by Model B kinetics to simulate phase separation (spinodal decomposition).
+1. Phase Field $\psi$: A continuous field governed by Model B kinetics to simulate phase separation (spinodal decomposition).
 2. Active Particles: Discrete agents following Langevin dynamics with self-propulsion and repulsive interactions.
-
-The coupling logic allows for the study of Motility-Induced Phase Separation (MIPS) and the influence of chemical affinities on droplet formation and growth.
 
 ## Installation and Compilation
 
 ### Prerequisites
-* Fortran Compiler: gfortran (version 9.0+) or Intel ifort.
-* Python: Version 3.8+ with NumPy and Matplotlib.
+* Fortran Compiler: any
+* Python: any 
 * Build System: GNU Make.
 
 ### Compilation
-To build the executable, navigate to the project root and use the provided Makefile:
 
-bash
-make
+To build the executable `simulation.exe` just type
 
-This will generate the main.exe binary. To remove compiled objects and module files, use make clean.
+`>> make`
 
 ## Usage
 
-### 1. Configuration
-Simulation parameters (grid size, particle number, active velocity, time step) are managed via the parameters.in file. Ensure this file is present in the execution directory.
+* `parameters.in` is the input file read by `simulation.exe`. It contains all the necessary parameters to execute the program. 
 
-### 2. Running the Simulation
-Execute the binary directly:
+* `input_creator.py` is a wrapper that can generate `parameters.in`. `input_creator.py` is *higher level* in the sense that it contains Physics-informed parameters such as Péclet number, concentration of particles and other reduced quantities. `parameters.in`, instead, contains only pure parameters needed for the simulation. 
 
-bash
-./main.exe
+* `sweeper.py` is a higher order wrapper which can sweep over two arrays to explore two variables (e.g. $Pe$ and $\phi_p$). It has the ability to overwrite the default values contained in `input_creator.py`. It creates a subfolder called `SIM_i_j` for each pair of variables and executes the simulation there. 
+Note: `sweeper.py` produces a file `sweep_info.txt` with the name and value of the variables that are specific for each subfolder `SIM_i_j`. 
 
-### 3. Checkpointing and Restarts
-The engine includes a binary checkpointing system. 
-* At defined intervals, the system state is saved to checkpoint.bin.
-* On startup, the program automatically searches for this file.
-* If found, the simulation resumes from the last saved step.
-* To start a new simulation from t=0, ensure no checkpoint.bin exists in the folder.
+### Output 
+
+Files produced by the program: 
+- `*.txt` files contain the state of the system at a given time.
+    1. `field_psi_*.txt`
+    2. `particles_*.txt`
+- `*.dat` contain statistical information
+    1. `free_energy.dat`
+    2. `stats.dat`
+- 
+
+ 
+### Statistical information
+
+Every **stats interval** the program will calculate and save statistical information. Currently these are: 
+* `free_energy.dat` contains the...
+* `stats.dat` contains  
+
+### Restart
+
+The program produces a binary file called `checkpoint.bin` every **save_interval** number of steps (same as saving state). This file contains the current state of the system at the moment of saving. The program will automatically detect the presence of this file and enter into restart mode. It will continue from the point where the simulation was and run until  **total_steps** is reached.
+
+Statistical information will be appended to existing files when using *restart mode*. 
+
+
+
 
 ## Analysis Tools
 
