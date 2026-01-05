@@ -13,7 +13,13 @@ program main
   type(Energy_t)                    :: curr_energy
   integer                           :: t
   real                              :: psieq
+
+  ! CPU time variables 
   real :: t1,t2
+
+  ! restart variables 
+  logical :: restart_found
+  integer :: start_t
 
   ! time code starts
   call cpu_time(t1)
@@ -24,17 +30,28 @@ program main
 
   ! conversions 
   psieq = sqrt( cfg%tau  / cfg%u )
-  print*, 'Equilibirum psi=',psieq      
-  
+  print*, 'Equilibirum psi=',psieq
+
   print*, 'affinity before scaling = ',cfg%affinity
   cfg%affinity = cfg%affinity * psieq
   print*, 'affinity after scaling = ',cfg%affinity
+
 
   allocate(particles(cfg%Np))
   allocate(psi(cfg%Lx, cfg%Ly), mu_total(cfg%Lx, cfg%Ly))
   
   ! Initialize field noise and random particle positions
-  call initialize_system(particles, psi, cfg)
+  ! CHECK FOR RESTART
+  inquire(file='checkpoint.bin', exist=restart_found)
+  if (restart_found) then
+      print *, ">>> RESTART FILE DETECTED. Loading state..."
+      call load_checkpoint('checkpoint.bin', t, psi, particles)
+      start_t = t + 1
+  else
+      print *, ">>> No restart file. Initializing new system."
+      call initialize_system(particles, psi, cfg)
+      start_t = 1
+  end if
 
   ! Print Header to Screen
   print *, "----------------------------------------------"
@@ -50,7 +67,7 @@ program main
 
 
   print *, "----------------------------------------------"  
-  t = 0
+  t = start_t
   print*, 'do a <<dry>> run at t=',t, 'to calculate properties' 
   call calculate_mu_pure(mu_total, psi, cfg, curr_energy%field)
   call compute_pp_forces(particles, cfg, curr_energy%pp)
@@ -64,7 +81,7 @@ program main
         " (", (real(t)/real(cfg%total_steps))*100.0, "%) - Data Saved."
 
   ! 2. HYBRID TIME-STEPPING (Explicit Euler-Scheme)
-  do t = 1, cfg%total_steps
+  do t = start_t, cfg%total_steps
     
     ! A. Thermodynamics: Field & Interaction
     ! 1. Pure Field Chemical Potential (Cahn-Hilliard bulk + surface)
@@ -99,6 +116,11 @@ program main
     if (mod(t, cfg%stats_interval) == 0) then
       call write_stats(t, psi, particles, cfg, curr_energy)
     endif
+
+    ! PERIODIC CHECKPOINT (e.g., every save_interval)
+    if (mod(t, cfg%save_interval) == 0) then
+        call save_checkpoint('checkpoint.bin', t, psi, particles)
+    end if
     
   end do
 

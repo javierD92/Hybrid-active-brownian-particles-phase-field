@@ -37,6 +37,6 @@ main.o: mod_core_types.o mod_field.o mod_coupling.o mod_particles.o mod_io.o
 # Utility to remove build files
 clean:
 	rm -f *.o *.mod $(TARGET)
-	rm *.dat *.txt *.png output 
+	rm -f *.dat *.txt *.png output *.bin 
 
 .PHONY: all clean

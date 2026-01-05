@@ -113,14 +113,14 @@ contains
     character(len=64) :: pfname, ffname
     
     ! I0 will adjust the width automatically (e.g., 'particles_10.dat', 'particles_1000000.dat')
-    write(pfname, '(A,I0,A)') 'particles_', t, '.dat'
+    write(pfname, '(A,I0,A)') 'particles_', t, '.txt'
     open(unit=20, file=trim(pfname), status='replace')
     do p = 1, size(particles)
       write(20, '(3F12.4)') particles(p)%x, particles(p)%y, particles(p)%phi
     end do
     close(20)
 
-    write(ffname, '(A,I0,A)') 'field_psi_', t, '.dat'
+    write(ffname, '(A,I0,A)') 'field_psi_', t, '.txt'
     open(unit=30, file=trim(ffname), status='replace')
     do j = 1, size(psi, 2)
       do i = 1, size(psi, 1)
@@ -141,6 +141,7 @@ subroutine write_stats(t, psi, particles, cfg, energy)
     
     real    :: domain_size, e_total
     logical :: op_energy, op_stats
+    logical :: file_exists
 
     ! 1. Calculate the physics-based statistics
     call calculate_domain_size(psi, cfg, domain_size)
@@ -150,8 +151,14 @@ subroutine write_stats(t, psi, particles, cfg, energy)
     ! 2. Handle Free Energy File (Unit 40)
     inquire(unit=40, opened=op_energy)
     if (.not. op_energy) then
-        open(40, file='free_energy.dat', status='replace')
-        write(40, '(A10, 4A15)') "# Step", "E_Field", "E_PP", "E_Coupling", "E_Total"
+        inquire(file='free_energy.dat', exist=file_exists)
+        ! Use 'append' to add to the end of the file instead of replacing
+        open(40, file='free_energy.dat', status='unknown', position='append')
+        
+        ! Only write header if the file didn't exist before
+        if (.not. file_exists) then
+            write(40, '(A10, 4A15)') "# Step", "E_Field", "E_PP", "E_Coupling", "E_Total"
+        end if
     end if
     write(40, '(I10, 4ES15.6)') t, energy%field, energy%pp, energy%coupling, e_total
     flush(40)
@@ -159,8 +166,12 @@ subroutine write_stats(t, psi, particles, cfg, energy)
     ! 3. Handle Statistics File (Unit 41)
     inquire(unit=41, opened=op_stats)
     if (.not. op_stats) then
-        open(41, file='stats.dat', status='replace')
-        write(41, '(A10, A20)') "# Step", "Domain_Size"
+        inquire(file='stats.dat', exist=file_exists)
+        open(41, file='stats.dat', status='unknown', position='append')
+        
+        if (.not. file_exists) then
+            write(41, '(A10, A20)') "# Step", "Domain_Size"
+        end if
     end if
     write(41, '(I10, ES20.8E2)') t, domain_size
     flush(41)
@@ -203,5 +214,33 @@ subroutine write_stats(t, psi, particles, cfg, energy)
             avg_size = real(cfg%Lx) 
         end if
     end subroutine calculate_domain_size
+
+  subroutine save_checkpoint(filename, t, psi, particles)
+    character(len=*), intent(in) :: filename
+    integer, intent(in)          :: t
+    real, intent(in)             :: psi(:,:)
+    type(Particle_t), intent(in) :: particles(:)
+    integer :: iunit
+
+    open(newunit=iunit, file=filename, form='unformatted', status='replace')
+    write(iunit) t
+    write(iunit) psi
+    write(iunit) particles
+    close(iunit)
+  end subroutine
+
+  subroutine load_checkpoint(filename, t, psi, particles)
+    character(len=*), intent(in) :: filename
+    integer, intent(out)         :: t
+    real, intent(out)            :: psi(:,:)
+    type(Particle_t), intent(out):: particles(:)
+    integer :: iunit
+
+    open(newunit=iunit, file=filename, form='unformatted', status='old')
+    read(iunit) t
+    read(iunit) psi
+    read(iunit) particles
+    close(iunit)
+  end subroutine
 
 end module mod_io
