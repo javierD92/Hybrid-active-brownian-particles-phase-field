@@ -24,8 +24,11 @@ program main
 
   ! conversions 
   psieq = sqrt( cfg%tau  / cfg%u )
-
+  print*, 'Equilibirum psi=',psieq      
+  
+  print*, 'affinity before scaling = ',cfg%affinity
   cfg%affinity = cfg%affinity * psieq
+  print*, 'affinity after scaling = ',cfg%affinity
 
   allocate(particles(cfg%Np))
   allocate(psi(cfg%Lx, cfg%Ly), mu_total(cfg%Lx, cfg%Ly))
