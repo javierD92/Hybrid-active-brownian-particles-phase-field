@@ -126,9 +126,12 @@ program main
 
   ! save final state 
   print*, "saving final state at t=",t
+  print*, 'saving state at *.txt'
   call write_data(psi, particles, t)
+  print*, 'saving stats at *.dat'
   call write_stats(t, psi, particles, cfg, curr_energy)
-
+  print*, 'saving checkpoint.bin in binary file for possible restart'
+  call save_checkpoint('checkpoint.bin', t, psi, particles)
 
   ! 3. CLEANUP
   deallocate(psi, mu_total, particles)
