@@ -246,7 +246,7 @@ subroutine write_stats(t, psi, particles, cfg, energy)
         open(41, file='stats.dat', status='unknown', position='append')
         
         if (.not. file_exists) then
-            write(41, '(A10, 3A20)') "# Step", "Domain_Size", "Avg_psi", "Avg_abs_psi"
+            write(41, '(A10, A20)') "# Step", "Domain_Size"
         end if
     end if
     write(41, '(I10, 3ES20.8E2)') t, domain_size, psiavg, psiabsavg
