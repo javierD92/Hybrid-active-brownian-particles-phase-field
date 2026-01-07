@@ -56,6 +56,8 @@ contains
     ! 1. Initialize the Field
     call random_number(psi)
     psi = (psi - 0.5) * 0.1 + cfg%psimean
+
+    call initialise_custom_psi(psi,cfg)
     
     ! 2. Initialize Particles with Overlap Check
     ! We use d^2 as a minimum safety distance (slightly less than r_cut)
@@ -104,6 +106,28 @@ contains
       particles(i)%phi = TWO_PI * particles(i)%phi
     end do
   end subroutine initialize_system
+
+  ! initialise custom psi
+  subroutine initialise_custom_psi(psi,cfg)
+    real,             intent(inout) :: psi(:,:)
+    type(Config_t),   intent(in)    :: cfg
+    integer :: i, j
+
+    psi(:,:) = 0.0
+    do i = 1,cfg%Lx
+      do j = 1,cfg%Ly
+
+        ! assign initial state to sinusoidal 
+        psi(i,j) = sin( 2* pi * real(i) / real( cfg%Lx) ) 
+
+      enddo
+    enddo
+
+    print*, 'psi was custom initialised instead of random'
+
+  end subroutine initialise_custom_psi
+
+
 
   subroutine write_data(psi, particles, t)
     real,             intent(in) :: psi(:,:)

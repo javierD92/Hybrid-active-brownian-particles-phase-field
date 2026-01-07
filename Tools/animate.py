@@ -80,37 +80,53 @@ psi = reshape_field(f_data, LX, LY)
 im = ax.imshow(psi, extent=[0, LX, 0, LY], origin='lower', 
                cmap='RdBu_r', vmin=V_MIN, vmax=V_MAX)
 
-pts = ax.scatter(p_data[:, 0], p_data[:, 1], c='#F0E442', # High contrast yellow
-                 edgecolors='black', s=20, zorder=3)
-
-u, v = np.cos(p_data[:, 2]), np.sin(p_data[:, 2])
-qvr = ax.quiver(p_data[:, 0], p_data[:, 1], u, v, color='white', 
-                pivot='tip', scale=60, width=0.003, zorder=4)
+# Check if p_data has content before initializing scatter/quiver
+if p_data.size > 0:
+    pts = ax.scatter(p_data[:, 0], p_data[:, 1], c='#F0E442', 
+                     edgecolors='black', s=20, zorder=3)
+    u, v = np.cos(p_data[:, 2]), np.sin(p_data[:, 2])
+    qvr = ax.quiver(p_data[:, 0], p_data[:, 1], u, v, color='white', 
+                    pivot='tip', scale=60, width=0.003, zorder=4)
+else:
+    # Initialize empty objects so the loop doesn't fail
+    pts = ax.scatter([], [], c='#F0E442', edgecolors='black', s=20, zorder=3)
+    qvr = ax.quiver([], [], [], [], color='white', pivot='tip', zorder=4)
 
 ax.set_title(f"Visualizing: {os.path.abspath(data_path)}")
 plt.colorbar(im, ax=ax, label='Field $\psi$')
 
 # --- Animation Loop ---
 for i in range(len(p_files)):
-    p_curr = np.loadtxt(p_files[i])
+    try:
+        p_curr = np.loadtxt(p_files[i])
+    except Exception:
+        p_curr = np.array([]) # Handle read errors as empty
+        
     f_curr = np.loadtxt(f_files[i])
     
+    # Update Field (Always happens)
     psi = reshape_field(f_curr, LX, LY) / PSI_EQ
-    
     im.set_array(psi)
-    pts.set_offsets(p_curr[:, :2])
     
-    u_new, v_new = np.cos(p_curr[:, 2]), np.sin(p_curr[:, 2])
-    qvr.set_offsets(p_curr[:, :2])
-    qvr.set_UVC(u_new, v_new)
+    # Update Particles only if file is not empty
+    if p_curr.size > 0 and p_curr.ndim > 0:
+        pts.set_visible(True)
+        qvr.set_visible(True)
+        
+        pts.set_offsets(p_curr[:, :2])
+        
+        u_new, v_new = np.cos(p_curr[:, 2]), np.sin(p_curr[:, 2])
+        qvr.set_offsets(p_curr[:, :2])
+        qvr.set_UVC(u_new, v_new)
+    else:
+        # Hide particle elements if no data is present
+        pts.set_visible(False)
+        qvr.set_visible(False)
     
+    # Update Text/Metadata
     step_num = int(re.findall(r'\d+', os.path.basename(p_files[i]))[0])
     physical_time = step_num * DT
-    
     ax.set_xlabel(f"Frame: {i} | Step: {step_num} | Time: {physical_time:.2f}")
     
     plt.draw()
     plt.pause(0.01)
-
-plt.ioff()
-plt.show()

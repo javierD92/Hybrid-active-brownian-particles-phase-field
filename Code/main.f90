@@ -18,7 +18,7 @@ program main
   real :: t1,t2
 
   ! restart variables 
-  logical :: restart_found
+  logical :: restart_found,equilibrated_found
   integer :: start_t
 
   ! time code starts
@@ -43,10 +43,18 @@ program main
   ! Initialize field noise and random particle positions
   ! CHECK FOR RESTART
   inquire(file='checkpoint.bin', exist=restart_found)
+
+  ! CHECK FOR START FROM EQUILIBRATION
+  inquire( file = 'equilibrated.bin' , exist=equilibrated_found)
+
   if (restart_found) then
       print *, ">>> RESTART FILE DETECTED. Loading state..."
       call load_checkpoint('checkpoint.bin', t, psi, particles)
       start_t = t + 1
+  elseif (equilibrated_found) then 
+      print *, ">>> EQUILIBRATED FILE DETECTED. Loading state..."
+      call load_checkpoint('equilibrated.bin', t, psi, particles)
+      start_t = 1
   else
       print *, ">>> No restart file. Initializing new system."
       call initialize_system(particles, psi, cfg)
