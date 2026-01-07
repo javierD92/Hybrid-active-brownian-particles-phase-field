@@ -8,16 +8,17 @@ def write_parameters_file(target_dir, overrides=None):
     # 1. Master Dictionary of Defaults
     p = {
         'Lx': 128, 'Ly': 128,
-        'dt_reduced': 0.001,
+        'dt_reduced': 0.01,
         't_total': 10000,
         'M': 1.0, 'kappa': 1.0, 'tau': 0.35, 'u': 0.5,
         'mean_psi': 0.0,
-        'R0': 1.7, 'epsilon': 1.0,
+        'R0': 1.7, 'epsilon': 10.0,
         'sigma': 1.0, 'affinity': 1.0, 'Reff': 1.7,
         'temperature': 0.05,
         'gamma_T': 1.0,
         'Pe': 10.0,
-        'phip': 0.2
+        'phip': 0.2,
+        'init_custom': "true" 
     }
 
     # 2. Update with whatever the Sweeper wants to change
@@ -60,7 +61,8 @@ def write_parameters_file(target_dir, overrides=None):
         (f"{p['epsilon']} {p['R0']}", "WCA"),
         (f"{p['temperature']}", "temp"),
         (f"{p['gamma_T']:.6f} {gamma_R:.6f}", "Gammas"),
-        (f"{vact}", "vact")
+        (f"{vact}", "vact"),
+        (f"{p['init_custom']}", "custom initial condition")
     ]
 
     # Write to target folder

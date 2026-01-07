@@ -57,7 +57,16 @@ program main
       start_t = 1
   else
       print *, ">>> No restart file. Initializing new system."
-      call initialize_system(particles, psi, cfg)
+      if (cfg%custom_init) then
+        print*, 'initialising with a custom-defined state'
+        print*, 'by default: sinusoidal spanning whole system'
+        print*, 'to modify initial custom state: ``initialize_custom_system.f90``'
+        print*, '' 
+        call initialize_custom_system(particles, psi, cfg)        
+      else
+        print*, 'initialise completely random state'
+        call initialize_system(particles, psi, cfg)
+      endif 
       start_t = 1
   end if
 

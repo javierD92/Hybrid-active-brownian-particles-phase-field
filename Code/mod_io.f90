@@ -29,6 +29,7 @@ contains
     read(10, *) cfg%temperature 
     read(10, *) cfg%gamm_T,cfg%gamm_R
     read(10, *) cfg%vact
+    read(10, *) cfg%custom_init
 
     close(10)
 
@@ -56,8 +57,6 @@ contains
     ! 1. Initialize the Field
     call random_number(psi)
     psi = (psi - 0.5) * 0.1 + cfg%psimean
-
-    call initialise_custom_psi(psi,cfg)
     
     ! 2. Initialize Particles with Overlap Check
     ! We use d^2 as a minimum safety distance (slightly less than r_cut)
@@ -108,24 +107,72 @@ contains
   end subroutine initialize_system
 
   ! initialise custom psi
-  subroutine initialise_custom_psi(psi,cfg)
+  subroutine initialize_custom_system(particles, psi, cfg)
+    type(Particle_t), intent(inout) :: particles(:)
     real,             intent(inout) :: psi(:,:)
     type(Config_t),   intent(in)    :: cfg
-    integer :: i, j
+    integer :: i, j, attempts, max_attempts
+    real    :: tx, ty, dx, dy, r2, safe_dist_sq
+    logical :: overlapping
 
-    psi(:,:) = 0.0
-    do i = 1,cfg%Lx
-      do j = 1,cfg%Ly
-
-        ! assign initial state to sinusoidal 
-        psi(i,j) = sin( 2* pi * real(i) / real( cfg%Lx) ) 
-
+    ! 1. Initialize the Field custom
+    do i = 1, cfg%Lx
+      do j = 1, cfg%Ly
+        psi(i,j) = sin(  2*pi * real(i) / real( cfg%Lx ))
       enddo
     enddo
+      
+    
+    ! 2. Initialize Particles with Overlap Check
+    ! We use d^2 as a minimum safety distance (slightly less than r_cut)
+    safe_dist_sq = cfg%d_2 
+    max_attempts = 1000  ! Prevent infinite loops if density is too high
 
-    print*, 'psi was custom initialised instead of random'
+    do i = 1, cfg%Np
+      attempts = 0
+      do
+        attempts = attempts + 1
+        overlapping = .false.
+        
+        ! Generate trial position
+        call random_number(tx); tx = tx * real(cfg%Lx)
+        call random_number(ty); ty = ty * real(cfg%Ly)
 
-  end subroutine initialise_custom_psi
+        ! put all particles in one half
+        tx = 0.5 * tx
+        
+        ! Check against all already placed particles
+        do j = 1, i - 1
+          dx = tx - particles(j)%x
+          dy = ty - particles(j)%y
+          
+          ! Minimum Image Convention (very important even at t=0)
+          if (abs(dx) > cfg%Lx * 0.5) dx = dx - sign(real(cfg%Lx), dx)
+          if (abs(dy) > cfg%Ly * 0.5) dy = dy - sign(real(cfg%Ly), dy)
+          
+          r2 = dx**2 + dy**2
+          if (r2 < safe_dist_sq) then
+            overlapping = .true.
+            exit ! Exit the j-loop
+          end if
+        end do
+        
+        ! If safe or we ran out of patience, accept the position
+        if (.not. overlapping .or. attempts > max_attempts) then
+          if (attempts > max_attempts) print*, "Warning: Could not find non-overlapping spot for particle", i
+          particles(i)%x = tx
+          particles(i)%y = ty
+          exit ! Exit the attempt-loop
+        end if
+      end do
+
+      ! Initialize other properties
+      particles(i)%fx = 0.0; particles(i)%fy = 0.0
+      particles(i)%fx_pp = 0.0; particles(i)%fy_pp = 0.0
+      call random_number(particles(i)%phi)
+      particles(i)%phi = TWO_PI * particles(i)%phi
+    end do
+  end subroutine initialize_custom_system
 
 
 

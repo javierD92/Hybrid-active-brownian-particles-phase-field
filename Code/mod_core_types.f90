@@ -32,6 +32,9 @@ module mod_core_types
     ! active parameters
     real    :: vact
 
+    ! initialisation flag 
+    logical :: custom_init
+
   end type Config_t
 
   ! Structure for individual particle data
