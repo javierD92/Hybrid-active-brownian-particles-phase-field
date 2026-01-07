@@ -3,6 +3,8 @@
 *.mod
 *.exe
 
+backup.sh
+
 # Ignore simulation data
 Simulations/
 *.dat

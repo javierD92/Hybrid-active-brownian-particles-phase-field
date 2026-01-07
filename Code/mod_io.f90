@@ -212,11 +212,15 @@ subroutine write_stats(t, psi, particles, cfg, energy)
     type(Energy_t),   intent(in) :: energy
     
     real    :: domain_size, e_total
+    real :: psiavg, psiabsavg
     logical :: op_energy, op_stats
     logical :: file_exists
 
     ! 1. Calculate the physics-based statistics
     call calculate_domain_size(psi, cfg, domain_size)
+
+    ! calculate mean value of psi and mean abolute value of psi with respect to average value 
+    call psi_averages( psi, cfg, psiavg, psiabsavg )
 
     e_total = energy%field + energy%pp + energy%coupling
 
@@ -245,7 +249,7 @@ subroutine write_stats(t, psi, particles, cfg, energy)
             write(41, '(A10, A20)') "# Step", "Domain_Size"
         end if
     end if
-    write(41, '(I10, ES20.8E2)') t, domain_size
+    write(41, '(I10, 3ES20.8E2)') t, domain_size, psiavg, psiabsavg
     flush(41)
 
   end subroutine write_stats

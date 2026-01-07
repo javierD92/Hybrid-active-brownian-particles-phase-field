@@ -40,4 +40,16 @@ contains
         end if
     end subroutine calculate_domain_size
 
+    subroutine psi_averages(psi, cfg , psiavg, psiabsavg)
+        real,    intent(in)  :: psi(:,:)
+        type(Config_t), intent(in) :: cfg
+        real,    intent(out) :: psiavg, psiabsavg
+        !integer :: i, j 
+
+        psiavg = sum( psi ) / real( size(psi) )
+
+        psiabsavg = sum( abs( psi - psiavg ) ) / real( size(psi) )
+
+    end subroutine psi_averages 
+
 end module mod_stats
