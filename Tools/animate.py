@@ -78,7 +78,8 @@ psi = reshape_field(f_data, LX, LY)
 
 # Plotting with inferred dimensions
 im = ax.imshow(psi, extent=[0, LX, 0, LY], origin='lower', 
-               cmap='RdBu_r', vmin=V_MIN, vmax=V_MAX)
+               cmap='RdBu_r', vmin=V_MIN, vmax=V_MAX,
+               interpolation='bilinear')
 
 # Check if p_data has content before initializing scatter/quiver
 if p_data.size > 0:

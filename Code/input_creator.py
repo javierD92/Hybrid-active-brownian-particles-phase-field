@@ -46,6 +46,9 @@ def write_parameters_file(target_dir, overrides=None):
     dt = tref * p['dt_reduced']
     total_steps = int(p['t_total'] * tBM / dt)
 
+    # Noise strengtg 
+    noise = np.sqrt( 0.25*p['M'] * p['temperature'] )
+
     # 4. Final Data Mapping for Fortran
     data = [
         (f"{p['Lx']} {p['Ly']}", "Lx, Ly"),
@@ -62,6 +65,7 @@ def write_parameters_file(target_dir, overrides=None):
         (f"{p['temperature']}", "temp"),
         (f"{p['gamma_T']:.6f} {gamma_R:.6f}", "Gammas"),
         (f"{vact}", "vact"),
+        (f"{noise}", "noise strength"),
         (f"{p['init_custom']}", "custom initial condition")
     ]
 

@@ -4,6 +4,33 @@ module mod_field
   public :: calculate_mu_pure, evolve_field_model_b
 
 contains
+   subroutine noise(psi, cfg, csi1, csi2)
+    real, intent(inout)        :: psi(:,:)
+    type(Config_t), intent(in) :: cfg
+    real, intent(inout)        :: csi1(:,:), csi2(:,:) ! Pre-allocated buffers
+    
+    integer :: i, j, ip, jp
+    real    :: noise_scale
+
+    noise_scale = cfg%noiseStrength * sqrt(cfg%dt) * sqrt(12.0)
+
+    ! 1. Highly optimized vectorized random generation
+    call random_number(csi1)
+    call random_number(csi2)
+
+    ! 2. Optimized nested loop (Minimize work inside)
+    do j = 1, cfg%Ly
+        jp = mod(j, cfg%Ly) + 1
+        do i = 1, cfg%Lx
+            ip = mod(i, cfg%Lx) + 1
+            
+            ! We do the "- 0.5" math here to avoid an extra loop over csi1/csi2
+            psi(i,j) = psi(i,j) + noise_scale * ( &
+                       csi1(ip, j) - csi1(i, j) + &
+                       csi2(i, jp) - csi2(i, j) )        
+        end do
+    end do
+end subroutine noise
 
   subroutine calculate_mu_pure(mu, psi, cfg, e_field)
     real, intent(out) :: mu(:,:)

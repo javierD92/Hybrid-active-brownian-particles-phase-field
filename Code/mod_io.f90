@@ -29,6 +29,7 @@ contains
     read(10, *) cfg%temperature 
     read(10, *) cfg%gamm_T,cfg%gamm_R
     read(10, *) cfg%vact
+    read(10,* ) cfg%noiseStrength
     read(10, *) cfg%custom_init
 
     close(10)

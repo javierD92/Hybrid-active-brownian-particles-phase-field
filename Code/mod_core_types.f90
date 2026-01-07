@@ -32,6 +32,9 @@ module mod_core_types
     ! active parameters
     real    :: vact
 
+    ! noise 
+    real :: noiseStrength
+
     ! initialisation flag 
     logical :: custom_init
 

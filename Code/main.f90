@@ -10,6 +10,9 @@ program main
   type(Config_t)                    :: cfg
   type(Particle_t), allocatable     :: particles(:)
   real, allocatable, dimension(:,:) :: psi, mu_total
+  ! Pre-allocated noise buffers
+  real, allocatable :: csi1(:,:)
+  real, allocatable :: csi2(:,:)
   type(Energy_t)                    :: curr_energy
   integer                           :: t
   real                              :: psieq
@@ -39,6 +42,7 @@ program main
 
   allocate(particles(cfg%Np))
   allocate(psi(cfg%Lx, cfg%Ly), mu_total(cfg%Lx, cfg%Ly))
+  allocate(csi1(cfg%Lx, cfg%Ly),csi2(cfg%Lx, cfg%Ly))
   
   ! Initialize field noise and random particle positions
   ! CHECK FOR RESTART
@@ -111,6 +115,8 @@ program main
     ! B. Field Kinetics: Diffusion Step (Model B)
     ! d_psi/dt = M * Laplacian(mu_total)
     call evolve_field_model_b(psi, mu_total, cfg)
+
+    if ( cfg%noiseStrength > 0.0) call noise(psi, cfg,csi1,csi2)
 
     ! C. Particle Kinetics: Repulsion & Motion
     ! 1. Pure Particle-Particle Repulsion (using hard-core R0)
