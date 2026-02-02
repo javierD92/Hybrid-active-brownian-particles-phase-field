@@ -31,10 +31,10 @@ def get_droplet_labels(psi_field, threshold=0.0):
     return relabeled
 
 # --- Data Loading ---
-path = "/home/javi/Documents/research/active-2d-binmix/code2.0/Simulations/set1_Explore_va/SIM_0_8"
-file = "field_psi_4000000.dat"
+path = "/media/javi/Elements_UB/UB/code2.0/Simulations/active-emulsion_diffusion/data"
+file = "field_psi_770000.txt"
 data = np.loadtxt(os.path.join(path, file)) 
-psi = np.reshape(data[:, 2], (256, 256))
+psi = np.reshape(data[:, 2], (512, 512))
 
 # Get the labels
 labeled_field = get_droplet_labels(psi)

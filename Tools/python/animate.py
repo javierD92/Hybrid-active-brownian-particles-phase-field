@@ -70,7 +70,7 @@ if not p_files or not f_files:
 fig, ax = plt.subplots(figsize=(8, 7))
 
 # Initialize objects
-p_data = np.loadtxt(p_files[0])
+p_data = np.loadtxt(p_files[0], ndmin=2)
 f_data = np.loadtxt(f_files[0])
 
 def reshape_field(data, lx, ly):
@@ -97,7 +97,7 @@ plt.colorbar(im, ax=ax, label='Field $\psi / \psi_{eq}$')
 # --- Animation/Saving Loop ---
 for i in range(len(p_files)):
     try:
-        p_curr = np.loadtxt(p_files[i])
+        p_curr = np.loadtxt(p_files[i], ndmin=2)
         f_curr = np.loadtxt(f_files[i])
     except Exception:
         continue

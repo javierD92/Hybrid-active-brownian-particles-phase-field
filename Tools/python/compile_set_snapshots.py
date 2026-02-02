@@ -49,15 +49,16 @@ def analyze_sweep(parent_dir):
             im = ax.imshow(psi, extent=[0, LX, 0, LY], origin='lower',
                            cmap=cfg.CMAP, vmin=cfg.V_MIN, vmax=cfg.V_MAX)
             
-            # 2. Plot Particles (Scatter)
-            ax.scatter(p_data[:, 0], p_data[:, 1], c=cfg.PARTICLE_COLOR,
-                       edgecolors='black', s=20, zorder=3)
+            if not p_data.size == 0:
+                # 2. Plot Particles (Scatter)
+                ax.scatter(p_data[:, 0], p_data[:, 1], c=cfg.PARTICLE_COLOR,
+                        edgecolors='black', s=20, zorder=3)
 
-            # 3. Plot Orientations (Quiver Arrows)
-            u, v = np.cos(p_data[:, 2]), np.sin(p_data[:, 2])
-            ax.quiver(p_data[:, 0], p_data[:, 1], u, v, 
-                      color=cfg.ARROW_COLOR, pivot='mid', 
-                      scale=cfg.ARROW_SCALE, width=cfg.ARROW_WIDTH, zorder=4)
+                # 3. Plot Orientations (Quiver Arrows)
+                u, v = np.cos(p_data[:, 2]), np.sin(p_data[:, 2])
+                ax.quiver(p_data[:, 0], p_data[:, 1], u, v, 
+                        color=cfg.ARROW_COLOR, pivot='mid', 
+                        scale=cfg.ARROW_SCALE, width=cfg.ARROW_WIDTH, zorder=4)
 
             info = get_info_text(folder)
             ax.set_title(f"Folder: {os.path.basename(folder)}\n{info}")
